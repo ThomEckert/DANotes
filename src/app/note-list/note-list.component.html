@@ -25,7 +25,7 @@
        </div>
     </div>
     <div>
-        @for (note of this.noteService.items$ | async; track $index) {
+        @for (note of getList(); track $index) {
             <app-note></app-note>
         }
         <!-- <app-note *ngFor="let note of this.noteService.items$ | async"></app-note> -->
