@@ -22,7 +22,7 @@ export class NoteListService {
     this.unsubNotes = this.subNoteList();
   }
 
-  async addNote(item: {}) {
+  async addNote(item: Note) {
     await addDoc(this.getNotesRef(), item).catch(
       (err) => { console.log(err); }
     ).then(
