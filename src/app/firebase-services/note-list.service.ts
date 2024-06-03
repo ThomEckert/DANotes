@@ -1,72 +1,87 @@
 import { Injectable, inject } from '@angular/core';
-import { Note } from '../interfaces/note.interface'
-import { Firestore, collection, doc, onSnapshot, addDoc, updateDoc, deleteDoc } from '@angular/fire/firestore';
-import { Observable } from 'rxjs';
+import { Note } from '../interfaces/note.interface';
+import {
+  Firestore,
+  collection,
+  doc,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  onSnapshot,
+} from '@angular/fire/firestore';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class NoteListService {
   trashNotes: Note[] = [];
   normalNotes: Note[] = [];
 
-  // items$;
-  // items;
   unsubTrash;
   unsubNotes;
 
   firestore: Firestore = inject(Firestore);
 
-  constructor() { 
-    this.unsubTrash = this.subTrashList();
+  constructor() {
     this.unsubNotes = this.subNoteList();
+    this.unsubTrash = this.subTrashList();
   }
 
-  async deleteNote(colId: string, docId: string) {
-    await deleteDoc(this.getSingleDocRef(colId, docId)).catch(
-      (err) => { console.log(err); }
-    ).then();
+  async deleteNote(colId: 'notes' | 'trash', docId: string) {
+    await deleteDoc(this.getSingleDocRef(colId, docId))
+      .catch((err) => {
+        console.log(err);
+      })
+      .then();
   }
 
   async updateNote(note: Note) {
     if (note.id) {
       let docRef = this.getSingleDocRef(this.getColIdFromNote(note), note.id);
       let item = this.getCleanJson(note);
-      await updateDoc(docRef, item).catch(
-        (err) => { console.log(err); }
-      ).then();
+      await updateDoc(docRef, item)
+        .catch((err) => {
+          console.log(err);
+        })
+        .then();
     }
   }
 
-  getCleanJson (note: Note): {} {
+  getCleanJson(note: Note): {} {
     return {
       type: note.type,
       title: note.title,
       content: note.content,
       marked: note.marked,
-    }
+    };
   }
 
   getColIdFromNote(note: Note) {
-    if (note.type == "note") {
-      return "notes";
+    if (note.type == 'note') {
+      return 'notes';
     } else {
-      return "trash";
+      return 'trash';
     }
   }
 
-  async addNote(item: Note) {
-    await addDoc(this.getNotesRef(), item).catch(
-      (err) => { console.log(err); }
-    ).then(
-      (docRef) => { console.log("Document written with ID: ", docRef?.id); }
-    );
+  async addNote(item: Note, colId: 'notes' | 'trash') {
+    if (colId == 'notes') {
+      await addDoc(this.getNotesRef(), item)
+        .catch((err) => {
+          console.error(err);
+        })
+        .then((docRef) => {
+          console.log('Document written with ID: ', docRef);
+        });
+    } else {
+      await addDoc(this.getTrashRef(), item);
+    }
   }
 
   subTrashList() {
     return onSnapshot(this.getTrashRef(), (list) => {
       this.trashNotes = [];
-      list.forEach(element => {
+      list.forEach((element) => {
         this.trashNotes.push(this.setNoteObject(element.data(), element.id));
       });
     });
@@ -75,7 +90,7 @@ export class NoteListService {
   subNoteList() {
     return onSnapshot(this.getNotesRef(), (list) => {
       this.normalNotes = [];
-      list.forEach(element => {
+      list.forEach((element) => {
         this.normalNotes.push(this.setNoteObject(element.data(), element.id));
       });
     });
@@ -89,11 +104,11 @@ export class NoteListService {
   setNoteObject(obj: any, id: string): Note {
     return {
       id: id,
-      type: obj.type || "note",
-      title: obj.title || "",
-      content: obj.content || "",
-      marked: obj.marked || false
-    }
+      type: obj.type || 'note',
+      title: obj.title || '',
+      content: obj.content || '',
+      marked: obj.marked || false,
+    };
   }
 
   getTrashRef() {
@@ -107,7 +122,4 @@ export class NoteListService {
   getSingleDocRef(colId: string, docId: string) {
     return doc(collection(this.firestore, colId), docId);
   }
-
-
-
-} 
+}
