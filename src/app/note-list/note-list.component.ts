@@ -22,7 +22,6 @@ export class NoteListComponent {
       if (this.favFilter == 'all') {
         return this.noteService.normalNotes;
       } else {
-        console.log(this.noteService.normalNotes);
         return this.noteService.normalMarkedNotes;
       }
     } else {
